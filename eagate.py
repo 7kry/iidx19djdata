@@ -100,7 +100,7 @@ class EaGate(object):
 
         # まずシリーズのリストページを開く
         first_time = True
-        for list_number in xrange(18, 19):
+        for list_number in xrange(0, 19):
             r = self._opener.open(MUSIC_LIST_URL.format(list_number))
             html = r.read()
             r.close()
@@ -108,7 +108,7 @@ class EaGate(object):
             for index_number in xrange(100):
                 if not first_time:
                     logging.debug(u'待機中...')
-                    time.sleep(3)
+                    time.sleep(15)
                 logging.debug(u'取得中... list_number={0} index_number={1}'.format(list_number, index_number))
                 r = self._opener.open(MUSIC_INFO_URL.format(index_number))
                 raw_html = r.read()
