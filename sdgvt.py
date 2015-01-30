@@ -10,7 +10,7 @@ if len(sys.argv) < 2:
   sys.exit(1)
 
 with open(sys.argv[1]) as fp:
-  with open(sys.argv[2] if len(sys.argv) > 2 else 'iidxac22.score.txt', 'w', encoding = 'utf_16_le') as wfp:
+  with open(sys.argv[2] if len(sys.argv) > 2 else 'iidxac22.score.txt', 'w', encoding = 'utf_16') as wfp:
     reader = csv.reader(fp)
     columns = next(reader)
     for music in reader:
