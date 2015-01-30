@@ -39,7 +39,7 @@ def main():
     # エンコードして書き出す
     for row in music_info:
       row_encoded = {}
-      for key, value in row.iteritems():
+      for key, value in row.items():
         row_encoded[key] = value
       writer.writerow(row_encoded)
     logging.info(u'"{0}"に書き出しました'.format(f.name))
