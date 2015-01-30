@@ -12,7 +12,6 @@ import logging
 from xml.sax.saxutils import unescape as unescapeHTML
 from pprint import pprint, pformat
 
-import chardet
 from pyquery import PyQuery
 
 LOGIN_URL = 'https://p.eagate.573.jp/gate/p/login.html'
@@ -28,7 +27,7 @@ class EaGate(object):
     self._convert_to_number = lambda s: int(re_remove_except_number.sub(u'', s))
 
   def _get_pyquery(self, raw_html):
-    return PyQuery(raw_html.decode(chardet.detect(raw_html)['encoding']))
+    return PyQuery(raw_html.decode('cp932'))
 
   def set_account(self, kid, password, otp = ''):
     self._kid = kid
@@ -132,9 +131,10 @@ class EaGate(object):
     tag = [unescapeHTML(line).strip() for line in doc(".music_info_td").html().split('<br />')]
     info['name'], info['genre'], info['artist'] = tag
 
+    pprint(info)
     # 選曲数
     text_list = doc("p:contains('選曲数')")
-    info['play_count_sp'], info['play_count_dp'] = list(map(lambda elem: re.sub(r'^.*(\d+).*', r'\1', elem.text), text_list))
+    info['play_count_sp'], info['play_count_dp'], *_ = list(map(lambda elem: int(re.sub(r'^.*(\d+).*', r'\1', elem.text)), text_list)) + [None]
 
     # クリアランプ
     info['clear_lamp_spn'], info['clear_lamp_sph'], info['clear_lamp_spa'], info['clear_lamp_dpn'], info['clear_lamp_dph'], info['clear_lamp_dpa'] = \
