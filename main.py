@@ -17,13 +17,13 @@ def main():
 
   with tempfile.NamedTemporaryFile() as tmp:
     eg = eagate.EaGate(tmp.name)
-  eg.set_account(kid, password)
-  logging.info('loginning...')
-  if eg.login() == False:
-      logging.error('Failed to login!')
-      return
-  logging.info(u'Fetching data...')
-  music_info = eg.get_music_info()
+    eg.set_account(kid, password)
+    logging.info('loginning...')
+    if eg.login() == False:
+        logging.error('Failed to login!')
+        return
+    logging.info(u'Fetching data...')
+    music_info = eg.get_music_info()
 
   FIELDS = [
       'name', 'genre', 'artist', 'version', 'play_count_sp', 'play_count_dp',
