@@ -34,7 +34,7 @@ def main():
   ]
 
   with open(u'music-info.csv', 'w') as f:
-    writer = csv.DictWriter(f, fields, lineterminator = '\n')
+    writer = csv.DictWriter(f, FIELDS, lineterminator = '\n')
     writer.writeheader()
     # エンコードして書き出す
     for row in music_info:
