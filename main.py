@@ -5,6 +5,7 @@ import csv
 import sys
 import locale
 import logging
+import tempfile
 from getpass import getpass
 
 import eagate
@@ -14,7 +15,8 @@ def main():
 
   kid, password = input("KONAMI ID: "), getpass("Password: ")
 
-  eg = eagate.EaGate()
+  with tempfile.NamedTemporaryFile() as tmp:
+    eg = eagate.EaGate(tmp.name)
   eg.set_account(kid, password)
   logging.info('loginning...')
   if eg.login() == False:

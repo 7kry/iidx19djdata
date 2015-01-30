@@ -17,11 +17,11 @@ from pyquery import PyQuery
 LOGIN_URL = 'https://p.eagate.573.jp/gate/p/login.html'
 
 class EaGate(object):
-  def __init__(self):
+  def __init__(self, path_to_cookie):
     self._kid = ''
     self._password = ''
     self._otp = ''
-    self._cj = cookielib.MozillaCookieJar('cookies.txt')
+    self._cj = cookielib.MozillaCookieJar(path_to_cookie)
     self._opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self._cj))
     re_remove_except_number = re.compile(r'\D')
     self._convert_to_number = lambda s: int(re_remove_except_number.sub(u'', s))
@@ -64,23 +64,23 @@ class EaGate(object):
     with self._opener.open('http://p.eagate.573.jp/game/2dx/%d/p/djdata/status.html' % CURRENT_VERSION) as r:
       doc = self._get_pyquery(r.read())
 
-      status = {}
+    status = {}
 
-      # 指定したテキストを持つth要素の次のtd要素のテキストを取ってくる
-      get_td_text = lambda th_text: doc('th:contains("%s")' % th_text).parent()('td').text()
-      status['dj_name'] = get_td_text('DJ NAME')
-      status['area'] = get_td_text('所属都道府県')
-      status['home'] = get_td_text('所属店舗')
-      status['iidx_id'] = get_td_text('IIDX ID')
-      status['play_count'] = get_td_text('プレー回数')
+    # 指定したテキストを持つth要素の次のtd要素のテキストを取ってくる
+    get_td_text = lambda th_text: doc('th:contains("%s")' % th_text).parent()('td').text()
+    status['dj_name'] = get_td_text('DJ NAME')
+    status['area'] = get_td_text('所属都道府県')
+    status['home'] = get_td_text('所属店舗')
+    status['iidx_id'] = get_td_text('IIDX ID')
+    status['play_count'] = get_td_text('プレー回数')
 
-      # DJ Point
-      status['dj_point'], status['dj_point_sp'], status['dj_point_dp'] = [PyQuery(elem).text() for elem in doc('td.point:contains("pt.")')]
+    # DJ Point
+    status['dj_point'], status['dj_point_sp'], status['dj_point_dp'] = [PyQuery(elem).text() for elem in doc('td.point:contains("pt.")')]
 
-      # 段位認定
-      status['class_sp'], status['class_dp'] = [PyQuery(elem).text() for elem in filter(lambda elem: 'pt.' not in elem.text, doc('td.point'))]
+    # 段位認定
+    status['class_sp'], status['class_dp'] = [PyQuery(elem).text() for elem in filter(lambda elem: 'pt.' not in elem.text, doc('td.point'))]
 
-      return status
+    return status
 
   def _music_list_generator(self, list_number):
     MUSIC_LIST_URL = 'http://p.eagate.573.jp/game/2dx/%d/p/djdata/music.html?list={0}&play_style=0&s=1&page={1}' % CURRENT_VERSION
@@ -88,12 +88,12 @@ class EaGate(object):
     while True:
       with self._opener.open(MUSIC_LIST_URL.format(list_number, page)) as r:
         doc = self._get_pyquery(r.read())
-        for minfo in doc('.music_info'):
-          yield 'http://p.eagate.573.jp' + PyQuery(minfo).attr('href')
-        if doc('a:contains("NEXT")'):
-          page += 1
-        else:
-          return
+      for minfo in doc('.music_info'):
+        yield 'http://p.eagate.573.jp' + PyQuery(minfo).attr('href')
+      if doc('a:contains("NEXT")'):
+        page += 1
+      else:
+        return
 
   def get_music_info(self):
     #MUSIC_INFO_URL = 'http://p.eagate.573.jp/game/2dx/%d/p/djdata/music_info.html?index={0}' % CURRENT_VERSION
@@ -114,9 +114,9 @@ class EaGate(object):
             logging.debug(u'エラーページに飛ばされました')
             break
           info = self._parse_music_info(r.read())
-          info['version'] = list_number
-          music_info.append(info)
-          logging.debug(pformat(info))
+        info['version'] = list_number
+        music_info.append(info)
+        logging.debug(pformat(info))
         first_time = False
 
     return music_info
