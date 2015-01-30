@@ -46,7 +46,7 @@ class EaGate(object):
     # クッキーを食べる
     r = self._opener.open(LOGIN_URL)
     r.close()
-    if 'done_login' in r.geturl(): # すでにログイン済み？
+    if 'mypage' in r.geturl(): # すでにログイン済み？
       return True
 
     # ログインデータ送信
