@@ -10,7 +10,7 @@ import time
 import sys
 import logging
 from xml.sax.saxutils import unescape as unescapeHTML
-from pprint import pprint
+from pprint import pprint, pformat
 
 import chardet
 from pyquery import PyQuery
@@ -117,8 +117,8 @@ class EaGate(object):
           info = self._parse_music_info(r.read())
           info['version'] = list_number
           music_info.append(info)
+          logging.debug(pformat(info))
         first_time = False
-
 
     return music_info
 
