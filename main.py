@@ -35,7 +35,7 @@ def main():
       'clear_lamp_dpa', 'dj_level_dpa', 'ex_score_dpa', 'pgreat_dpa', 'great_dpa', 'miss_count_dpa',
   ]
 
-  with open(u'music-info.csv', 'w') as f:
+  with open(sys.argv[1] if len(sys.argv) > 1 else 'music-info.csv', 'w') as f:
     writer = csv.DictWriter(f, FIELDS, lineterminator = '\n')
     writer.writeheader()
     # エンコードして書き出す
@@ -44,7 +44,7 @@ def main():
       for key, value in row.items():
         row_encoded[key] = value
       writer.writerow(row_encoded)
-    logging.info(u'"{0}"に書き出しました'.format(f.name))
+    logging.info("Saved to `{0}'.".format(f.name))
 
 if __name__ == '__main__':
   main()
