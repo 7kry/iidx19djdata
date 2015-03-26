@@ -3,6 +3,7 @@
 import urllib
 import http.cookiejar as cookielib
 from xml.etree import ElementTree
+from zipfile import ZipFile
 
 from eagate import CURRENT_VERSION
 
@@ -35,8 +36,11 @@ class SDGVT:
         'userid'  : self.__username,
         'password': self.__password,
       }).encode('utf-8')
-    with self.__opener.open(BASE_URL + '/login.php', query) as res:
+    with self.__opener.open(BASE_URL + 'login.php', query) as res:
       xmlstr = res.read().decode('shift_jis')
       if not ElementTree.fromstring(xmlstr).find('userid').text:
         raise Exception('Failed to login to SDGVT.')
     self.__cj.save()
+
+  def upload(self, data):
+    __import__('pprint').pprint(self.__opener.open(BASE_URL + 'gettool.php')).read()

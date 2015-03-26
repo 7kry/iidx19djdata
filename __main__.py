@@ -54,6 +54,7 @@ def sdgvt_upload(args):
   with tempfile.NamedTemporaryFile() as tmp:
     session = sdgvt.SDGVT(input('SDGVT Username: '), getpass('Password: '), tmp.name)
     session.login()
+    session.upload(None)
 
 argparser_root = argparse.ArgumentParser()
 argparser_root.set_defaults(func = None)
