@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # vim:fileencoding=UTF-8
 
+import argparse
 import csv
 import sys
 import locale
@@ -10,7 +11,7 @@ from getpass import getpass
 
 import eagate
 
-def main():
+def fetch(args):
   logging.basicConfig(level = logging.DEBUG)
 
   kid, password = input("KONAMI ID: "), getpass("Password: ")
@@ -35,7 +36,7 @@ def main():
       'clear_lamp_dpa', 'dj_level_dpa', 'ex_score_dpa', 'pgreat_dpa', 'great_dpa', 'miss_count_dpa',
   ]
 
-  with open(sys.argv[1] if len(sys.argv) > 1 else 'music-info.csv', 'w') as f:
+  with open(args.savedest, 'w') as f:
     writer = csv.DictWriter(f, FIELDS, lineterminator = '\n')
     writer.writeheader()
     # エンコードして書き出す
@@ -46,5 +47,16 @@ def main():
       writer.writerow(row_encoded)
     logging.info("Saved to `{0}'.".format(f.name))
 
-if __name__ == '__main__':
-  main()
+argparser_root = argparse.ArgumentParser()
+argparser_root.set_defaults(func = None)
+
+subparser = argparser_root.add_subparsers()
+parser_fetch = subparser.add_parser('fetch', help = 'to Fetch your DJ DATA from e-AMUSEMENT GATE.')
+parser_fetch.set_defaults(func = fetch, savedest = 'music-info.csv')
+parser_fetch.add_argument('--savedest')
+
+args = argparser_root.parse_args()
+if args.func:
+  args.func(args)
+else:
+  argparser_root.parse_args(["--help"])
