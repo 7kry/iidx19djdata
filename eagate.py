@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # vim:fileencoding=UTF-8
 
-CURRENT_VERSION = 22 # IIDX 22 PENDUAL
+from common import CURRENT_VERSION
 
 import urllib
 import http.cookiejar as cookielib
