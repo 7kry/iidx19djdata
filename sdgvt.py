@@ -1,40 +1,42 @@
-#! /usr/bin/python3
 # vim:fileencoding=UTF-8
 
-import csv
-import sys
-from pprint import pprint
+import urllib
+import http.cookiejar as cookielib
+from xml.etree import ElementTree
 
-if len(sys.argv) < 2:
-  sys.stderr.write("USAGE %s /path/to/music-info.csv [/path/to/iidxac22.score.txt]\n" % sys.argv[0])
-  sys.exit(1)
+from eagate import CURRENT_VERSION
 
-with open(sys.argv[1]) as fp:
-  with open(sys.argv[2] if len(sys.argv) > 2 else 'iidxac22.score.txt', 'w', encoding = 'utf_16') as wfp:
-    reader = csv.reader(fp)
-    columns = next(reader)
-    for music in reader:
-      data = dict(zip(columns, [elem if elem is not '' else '-' for elem in music]))
-      wfp.write("\t".join([
-        data['name'],
-        data['genre'],
-        data['artist'],
-        data['clear_lamp_spn'],
-        data['clear_lamp_sph'],
-        data['clear_lamp_spa'],
-        "%s(%s/%s)" % (data['ex_score_spn'], data['pgreat_spn'], data['great_spn']),
-        "%s(%s/%s)" % (data['ex_score_sph'], data['pgreat_sph'], data['great_sph']),
-        "%s(%s/%s)" % (data['ex_score_spa'], data['pgreat_spa'], data['great_spa']),
-        data['miss_count_spn'],
-        data['miss_count_sph'],
-        data['miss_count_spa'],
-        data['clear_lamp_dpn'],
-        data['clear_lamp_dph'],
-        data['clear_lamp_dpa'],
-        "%s(%s/%s)" % (data['ex_score_dpn'], data['pgreat_dpn'], data['great_dpn']),
-        "%s(%s/%s)" % (data['ex_score_dph'], data['pgreat_dph'], data['great_dph']),
-        "%s(%s/%s)" % (data['ex_score_dpa'], data['pgreat_dpa'], data['great_dpa']),
-        data['miss_count_dpn'],
-        data['miss_count_dph'],
-        data['miss_count_dpa'],
-      ]) + '\r\n')
+BASE_URL = 'http://felice.dip.jp/iidxac%d/' % CURRENT_VERSION
+
+class SDGVT:
+  CLEARLAMP = {
+    "FULL COMBO"   : 7,
+    "EX HARD CLEAR": 6,
+    "HARD CLEAR"   : 5,
+    "ASSIST CLEAR" : 4,
+    "EASY CLEAR"   : 3,
+    "FAILED"       : 2,
+    "CLEAR"        : 1,
+    "NO PLAY"      : 0,
+  }
+
+  def __init__(self, username, password, path_to_cookie):
+    self.__username = username
+    self.__password = password
+    self.__cj = cookielib.MozillaCookieJar(path_to_cookie)
+    self.__opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.__cj))
+
+  def login(self):
+    # トップページ
+    self.__opener.open(BASE_URL).close()
+
+    # ログイン
+    query = urllib.parse.urlencode({
+        'userid'  : self.__username,
+        'password': self.__password,
+      }).encode('utf-8')
+    with self.__opener.open(BASE_URL + '/login.php', query) as res:
+      xmlstr = res.read().decode('shift_jis')
+      if not ElementTree.fromstring(xmlstr).find('userid').text:
+        raise Exception('Failed to login to SDGVT.')
+    self.__cj.save()

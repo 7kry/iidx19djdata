@@ -29,7 +29,7 @@ class EaGate(object):
   def _get_pyquery(self, raw_html):
     return PyQuery(raw_html.decode('cp932'))
 
-  def set_account(self, kid, password, otp = ''):
+  def set_account(self, kid, password = '', otp = ''):
     self._kid = kid
     self._password = password
     self._otp = otp

@@ -10,6 +10,7 @@ import tempfile
 from getpass import getpass
 
 import eagate
+import sdgvt
 
 def fetch(args):
   logging.basicConfig(level = logging.DEBUG)
@@ -47,6 +48,13 @@ def fetch(args):
       writer.writerow(row_encoded)
     logging.info("Saved to `{0}'.".format(f.name))
 
+  return music_info
+
+def sdgvt_upload(args):
+  with tempfile.NamedTemporaryFile() as tmp:
+    session = sdgvt.SDGVT(input('SDGVT Username: '), getpass('Password: '), tmp.name)
+    session.login()
+
 argparser_root = argparse.ArgumentParser()
 argparser_root.set_defaults(func = None)
 
@@ -54,6 +62,10 @@ subparser = argparser_root.add_subparsers()
 parser_fetch = subparser.add_parser('fetch', help = 'to Fetch your DJ DATA from e-AMUSEMENT GATE.')
 parser_fetch.set_defaults(func = fetch, savedest = 'music-info.csv')
 parser_fetch.add_argument('--savedest')
+
+parser_fetch = subparser.add_parser('sdgvt', help = 'to Upload your DJ DATA to IIDX SCORE DATA GRAPHICAL VIEW TOOL.')
+parser_fetch.set_defaults(func = sdgvt_upload)
+parser_fetch.add_argument('path_to_csv')
 
 args = argparser_root.parse_args()
 if args.func:
