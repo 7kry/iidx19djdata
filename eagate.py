@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # vim:fileencoding=UTF-8
 
-CURRENT_VERSION = 22 # IIDX 22 PENDUAL
+from common import CURRENT_VERSION
 
 import urllib
 import http.cookiejar as cookielib
@@ -18,11 +18,11 @@ LOGIN_URL = 'https://p.eagate.573.jp/gate/p/login.html'
 
 class EaGate(object):
   def __init__(self, path_to_cookie):
-    self._kid = ''
-    self._password = ''
-    self._otp = ''
-    self._cj = cookielib.MozillaCookieJar(path_to_cookie)
-    self._opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self._cj))
+    self.__kid = ''
+    self.__password = ''
+    self.__otp = ''
+    self.__cj = cookielib.MozillaCookieJar(path_to_cookie)
+    self.__opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.__cj))
     re_remove_except_number = re.compile(r'\D')
     self._convert_to_number = lambda s: int(re_remove_except_number.sub(u'', s))
 
@@ -30,38 +30,38 @@ class EaGate(object):
     return PyQuery(raw_html.decode('cp932'))
 
   def set_account(self, kid, password = '', otp = ''):
-    self._kid = kid
-    self._password = password
-    self._otp = otp
+    self.__kid = kid
+    self.__password = password
+    self.__otp = otp
 
 
   def login(self):
     """成功したらTrueを返す"""
 
     try: # ロード時のエラーを無視
-      self._cj.load()
+      self.__cj.load()
     except:
       pass
 
     # クッキーを食べる
-    r = self._opener.open(LOGIN_URL)
+    r = self.__opener.open(LOGIN_URL)
     r.close()
     if 'mypage' in r.geturl(): # すでにログイン済み？
       return True
 
     # ログインデータ送信
-    query_args = { 'KID': self._kid, 'pass': self._password, 'OTP': self._otp }
+    query_args = { 'KID': self.__kid, 'pass': self.__password, 'OTP': self.__otp }
     encoded_args = urllib.parse.urlencode(query_args).encode('utf-8')
-    r = self._opener.open(LOGIN_URL, encoded_args)
+    r = self.__opener.open(LOGIN_URL, encoded_args)
     r.close()
     if 'mypage' not in r.geturl():
       return False
 
-    self._cj.save()
+    self.__cj.save()
     return True
 
   def get_status(self):
-    with self._opener.open('http://p.eagate.573.jp/game/2dx/%d/p/djdata/status.html' % CURRENT_VERSION) as r:
+    with self.__opener.open('http://p.eagate.573.jp/game/2dx/%d/p/djdata/status.html' % CURRENT_VERSION) as r:
       doc = self._get_pyquery(r.read())
 
     status = {}
@@ -86,7 +86,7 @@ class EaGate(object):
     MUSIC_LIST_URL = 'http://p.eagate.573.jp/game/2dx/%d/p/djdata/music.html?list={0}&play_style=0&s=1&page={1}' % CURRENT_VERSION
     page = 1
     while True:
-      with self._opener.open(MUSIC_LIST_URL.format(list_number, page)) as r:
+      with self.__opener.open(MUSIC_LIST_URL.format(list_number, page)) as r:
         doc = self._get_pyquery(r.read())
       for minfo in doc('.music_info'):
         yield 'http://p.eagate.573.jp' + PyQuery(minfo).attr('href')
@@ -109,7 +109,7 @@ class EaGate(object):
       for url in self._music_list_generator(list_number):
         if not first_time:
           time.sleep(0.2)
-        with self._opener.open(url) as r:
+        with self.__opener.open(url) as r:
           if 'error01.html' in r.geturl():
             logging.debug(u'エラーページに飛ばされました')
             break

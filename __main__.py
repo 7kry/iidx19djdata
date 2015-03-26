@@ -9,6 +9,7 @@ import logging
 import tempfile
 from getpass import getpass
 
+import common
 import eagate
 import sdgvt
 
@@ -27,34 +28,17 @@ def fetch(args):
     logging.info(u'Fetching data...')
     music_info = eg.get_music_info()
 
-  FIELDS = [
-      'name', 'genre', 'artist', 'version', 'play_count_sp', 'play_count_dp',
-      'clear_lamp_spn', 'dj_level_spn', 'ex_score_spn', 'pgreat_spn', 'great_spn', 'miss_count_spn',
-      'clear_lamp_sph', 'dj_level_sph', 'ex_score_sph', 'pgreat_sph', 'great_sph', 'miss_count_sph',
-      'clear_lamp_spa', 'dj_level_spa', 'ex_score_spa', 'pgreat_spa', 'great_spa', 'miss_count_spa',
-      'clear_lamp_dpn', 'dj_level_dpn', 'ex_score_dpn', 'pgreat_dpn', 'great_dpn', 'miss_count_dpn',
-      'clear_lamp_dph', 'dj_level_dph', 'ex_score_dph', 'pgreat_dph', 'great_dph', 'miss_count_dph',
-      'clear_lamp_dpa', 'dj_level_dpa', 'ex_score_dpa', 'pgreat_dpa', 'great_dpa', 'miss_count_dpa',
-  ]
-
-  with open(args.savedest, 'w') as f:
-    writer = csv.DictWriter(f, FIELDS, lineterminator = '\n')
-    writer.writeheader()
-    # エンコードして書き出す
-    for row in music_info:
-      row_encoded = {}
-      for key, value in row.items():
-        row_encoded[key] = value
-      writer.writerow(row_encoded)
-    logging.info("Saved to `{0}'.".format(f.name))
+  common.save_music_info(open(args.savedest, 'w'), music_info)
 
   return music_info
 
 def sdgvt_upload(args):
-  with tempfile.NamedTemporaryFile() as tmp:
-    session = sdgvt.SDGVT(input('SDGVT Username: '), getpass('Password: '), tmp.name)
-    session.login()
-    session.upload(None)
+  with open(args.path_to_csv) as fp:
+    music_info = common.load_music_info(fp)
+    with tempfile.NamedTemporaryFile() as tmp:
+      session = sdgvt.SDGVT(input('SDGVT Username: '), getpass('Password: '), tmp.name)
+      session.login()
+      session.upload(music_info)
 
 argparser_root = argparse.ArgumentParser()
 argparser_root.set_defaults(func = None)
