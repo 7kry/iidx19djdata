@@ -1,5 +1,6 @@
 # vim:fileencoding=UTF-8
 
+import logging
 from   functools import reduce
 import http.cookiejar as cookielib
 import io
@@ -71,6 +72,7 @@ class SDGVT:
       try:
         itemid = songid[item['name']]
       except KeyError:
+        logging.error('`{name}\' not found...'.format(name = item['name']))
         continue
       self._upload_song(registered, item['name'], itemid, 'sp', 'N', item['ex_score_spn'], item['clear_lamp_spn'], item['miss_count_spn'])
       self._upload_song(registered, item['name'], itemid, 'sp', 'H', item['ex_score_sph'], item['clear_lamp_sph'], item['miss_count_sph'])
@@ -97,4 +99,4 @@ class SDGVT:
       query['misscount'] = misscount
     with self.__opener.open(BASE_URL + 'updatescoredata.php', urllib.parse.urlencode(query).encode('ascii')) as r:
       result = ElementTree.fromstring(r.read().decode('cp932')).text
-      print("%s[%s]: %s" % (songname, sp_or_dp.upper() + nha, result))
+      logging.info("%s[%s]: %s" % (songname, sp_or_dp.upper() + nha, result))
