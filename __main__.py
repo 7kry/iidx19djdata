@@ -21,7 +21,7 @@ def fetch(args):
   with tempfile.NamedTemporaryFile() as tmp:
     eg = eagate.EaGate(tmp.name)
     eg.set_account(kid, password)
-    logging.info('loginning...')
+    logging.info('logging in...')
     if eg.login() == False:
         logging.error('Failed to login!')
         return
