@@ -33,6 +33,7 @@ def fetch(args):
   return music_info
 
 def sdgvt_upload(args):
+  sdgvt.logging.basicConfig(level = logging.INFO)
   with open(args.path_to_csv) as fp:
     music_info = common.load_music_info(fp)
     with tempfile.NamedTemporaryFile() as tmp:
