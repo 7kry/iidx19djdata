@@ -83,9 +83,7 @@ class SDGVT:
 
   def _upload_song(self, registered, songname, songid, sp_or_dp, nha, exscore, lamp, misscount):
     key = (songname, sp_or_dp, nha)
-    if key not in registered:
-      return
-    elif registered[key] == (SDGVT.LAMPALIAS[lamp], exscore or '0', misscount or '-'):
+    if key in registered and registered[key] == (SDGVT.LAMPALIAS[lamp], exscore or '0', misscount or '-'):
       return
     query = {
       "songid"   : songid,
