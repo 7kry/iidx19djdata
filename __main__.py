@@ -26,10 +26,11 @@ def fetch(args):
         logging.error('Failed to login!')
         return
     logging.info(u'Fetching data...')
-    music_info = eg.get_music_info()
+    music_info = eg.get_music_info(args.recent)
 
   common.save_music_info(open(args.savedest, 'w'), music_info)
 
+  print(len(music_info))
   return music_info
 
 def sdgvt_upload(args):
@@ -46,8 +47,9 @@ argparser_root.set_defaults(func = None)
 
 subparser = argparser_root.add_subparsers()
 parser_fetch = subparser.add_parser('fetch', help = 'to Fetch your DJ DATA from e-AMUSEMENT GATE.')
-parser_fetch.set_defaults(func = fetch, savedest = 'music-info.csv')
+parser_fetch.set_defaults(func = fetch, savedest = 'music-info.csv', recent = False)
 parser_fetch.add_argument('--savedest')
+parser_fetch.add_argument('--recent', action = 'store_true')
 
 parser_fetch = subparser.add_parser('sdgvt', help = 'to Upload your DJ DATA to IIDX SCORE DATA GRAPHICAL VIEW TOOL.')
 parser_fetch.set_defaults(func = sdgvt_upload)

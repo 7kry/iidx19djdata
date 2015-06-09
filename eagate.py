@@ -5,12 +5,13 @@ from common import CURRENT_VERSION
 
 import urllib
 import http.cookiejar as cookielib
+import itertools
 import re
 import time
 import sys
 import logging
 from xml.sax.saxutils import unescape as unescapeHTML
-from pprint import pprint, pformat
+from pprint import pformat
 
 from pyquery import PyQuery
 
@@ -84,40 +85,38 @@ class EaGate(object):
 
   def _music_list_generator(self, list_number):
     MUSIC_LIST_URL = 'http://p.eagate.573.jp/game/2dx/%d/p/djdata/music.html?list={0}&play_style=0&s=1&page={1}' % CURRENT_VERSION
-    page = 1
-    while True:
-      with self.__opener.open(MUSIC_LIST_URL.format(list_number, page)) as r:
+    MUSIC_RECENT_URL = 'http://p.eagate.573.jp/game/2dx/%d/p/djdata/music_recent.html?s=null&page={0}' % CURRENT_VERSION
+    for page in itertools.count(1):
+      with self.__opener.open(MUSIC_LIST_URL.format(list_number, page) if list_number is not None else MUSIC_RECENT_URL.format(page)) as r:
         doc = self._get_pyquery(r.read())
       for minfo in doc('.music_info'):
         yield 'http://p.eagate.573.jp' + PyQuery(minfo).attr('href')
-      if doc('a:contains("NEXT")'):
-        page += 1
-      else:
+      if not doc('a:contains("NEXT")'):
         return
 
-  def get_music_info(self):
-    #MUSIC_INFO_URL = 'http://p.eagate.573.jp/game/2dx/%d/p/djdata/music_info.html?index={0}' % CURRENT_VERSION
+  def _music_url_generator(self, recent = False):
+    if recent:
+      for url in self._music_list_generator(None):
+        yield (url, None)
+    else:
+      for list_number in range(0, CURRENT_VERSION):
+        #music_info.htmlで各曲の詳細を取得
+        for url in self._music_list_generator(list_number):
+          yield (url, list_number)
 
+  def get_music_info(self, recent = False):
     music_info = []
 
-    # まずシリーズのリストページを開く
-    first_time = True
-
-    for list_number in range(0, CURRENT_VERSION):
-      self._music_list_generator(list_number)
-      #music_info.htmlで各曲の詳細を取得
-      for url in self._music_list_generator(list_number):
-        if not first_time:
-          time.sleep(0.2)
-        with self.__opener.open(url) as r:
-          if 'error01.html' in r.geturl():
-            logging.debug(u'エラーページに飛ばされました')
-            break
-          info = self._parse_music_info(r.read())
-        info['version'] = list_number
-        music_info.append(info)
-        logging.debug(pformat(info))
-        first_time = False
+    for url, list_number in self._music_url_generator(recent):
+      with self.__opener.open(url) as r:
+        if 'error01.html' in r.geturl():
+          logging.debug(u'エラーページに飛ばされました')
+          break
+        info = self._parse_music_info(r.read())
+      info['version'] = list_number
+      music_info.append(info)
+      logging.debug(info['name'])
+      time.sleep(0.2)
 
     return music_info
 
@@ -131,7 +130,6 @@ class EaGate(object):
     tag = [unescapeHTML(line).strip() for line in doc(".music_info_td").html().split('<br />')]
     info['name'], info['genre'], info['artist'] = tag
 
-    pprint(info)
     # 選曲数
     text_list = doc("p:contains('選曲数')")
     info['play_count_sp'], info['play_count_dp'], *_ = list(map(lambda elem: int(re.sub(r'^.*(\d+).*', r'\1', elem.text)), text_list)) + [None]
