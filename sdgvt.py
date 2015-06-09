@@ -63,9 +63,19 @@ class SDGVT:
     # 登録済みスコアを取得
     registered = {}
     for version in range(1, CURRENT_VERSION + 1):
-      for data in ElementTree.fromstring(self.__opener.open(BASE_URL + 'getscoredata.php', urllib.parse.urlencode({'userid': self.__username, 'version': version}).encode('ascii')).read().decode('cp932')).findall('data'):
-        registered[(data.find('songname').text, data.find('playstyle').text, data.find('mode').text)] = \
-            (data.find('clearlamp').text, data.find('exscore').text, data.find('misscount').text)
+      for data in ElementTree.fromstring(
+                    self.__opener.open(BASE_URL + 'getscoredata.php',
+                                       urllib.parse.urlencode({
+                                            'userid': self.__username,
+                                            'version': version
+                                          }).encode('ascii')).read().decode('cp932')).findall('data'):
+        key = (data.find('songid').text,
+               data.find('playstyle').text,
+               data.find('mode').text)
+        val = (data.find('clearlamp').text,
+               data.find('exscore').text,
+               data.find('misscount').text)
+        registered[key] = val
 
     for item in music_info:
       itemid = None
@@ -82,8 +92,9 @@ class SDGVT:
       self._upload_song(registered, item['name'], itemid, 'dp', 'A', item['ex_score_dpa'], item['clear_lamp_dpa'], item['miss_count_dpa'])
 
   def _upload_song(self, registered, songname, songid, sp_or_dp, nha, exscore, lamp, misscount):
-    key = (songname, sp_or_dp, nha)
-    if key in registered and registered[key] == (SDGVT.LAMPALIAS[lamp], exscore or '0', misscount or '-'):
+    key = (songid, sp_or_dp, nha)
+    val = (SDGVT.LAMPALIAS[lamp], exscore or '0', misscount or '-')
+    if key not in registered or registered[key] == val:
       return
     query = {
       "songid"   : songid,
