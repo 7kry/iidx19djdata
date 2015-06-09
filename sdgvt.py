@@ -8,7 +8,7 @@ import urllib
 from   xml.etree import ElementTree
 from   zipfile import ZipFile
 
-from common import CURRENT_VERSION
+from common import CURRENT_VERSION, LEVELS
 
 BASE_URL = 'http://felice.dip.jp/iidxac%d/' % CURRENT_VERSION
 
@@ -62,13 +62,14 @@ class SDGVT:
 
     # 登録済みスコアを取得
     registered = {}
-    for version in range(1, CURRENT_VERSION + 1):
+    for level in LEVELS:
+      query = urllib.parse.urlencode({
+                'userid': self.__username,
+                'level': level,
+              }).encode('ascii')
       for data in ElementTree.fromstring(
                     self.__opener.open(BASE_URL + 'getscoredata.php',
-                                       urllib.parse.urlencode({
-                                            'userid': self.__username,
-                                            'version': version
-                                          }).encode('ascii')).read().decode('cp932')).findall('data'):
+                                       query).read().decode('cp932')).findall('data'):
         key = (data.find('songid').text,
                data.find('playstyle').text,
                data.find('mode').text)

@@ -3,6 +3,7 @@
 import csv
 
 CURRENT_VERSION = 22 # IIDX 22 PENDUAL
+LEVELS = range(1, 13)
 
 FIELDS = [
     'name', 'genre', 'artist', 'version', 'play_count_sp', 'play_count_dp',
